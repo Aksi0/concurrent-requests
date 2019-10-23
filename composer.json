@@ -2,7 +2,8 @@
     "require": {
         "php": ">=7.1",
         "amphp/http-client": "^3.0",
-        "ext-json": "*"
+        "ext-json": "*",
+        "guzzlehttp/guzzle": "^6.4"
     },
     "autoload": {
         "psr-4": {
