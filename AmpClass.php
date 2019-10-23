@@ -3,6 +3,8 @@
 use Amp\Artax\DefaultClient;
 use Amp\Artax\Request;
 use Amp\Artax\Response;
+use Amp\Coroutine;
+use Amp\Promise;
 use Amp\Loop;
 
 /**
@@ -16,12 +18,10 @@ class AmpClass
     /** @var DefaultClient */
     protected $client;
 
-    protected $result = [];
-
     public function __construct()
     {
         $this->client = new DefaultClient;
-        $this->client->setOption(DefaultClient::OP_TRANSFER_TIMEOUT, 90000);
+        $this->client->setOption(DefaultClient::OP_TRANSFER_TIMEOUT, 15000);
     }
 
     /**
@@ -38,20 +38,46 @@ class AmpClass
 
     public function run()
     {
-        Loop::run(function () {
+        $result = [];
+        Loop::run(function () use(&$result) {
             try {
+                /** @var Coroutine[] $promises */
                 $promises = [];
                 foreach ($this->urls as $urlInfo) {
                     $promises[$urlInfo['url']] = Amp\call($this->getRequestHandler(), $urlInfo['url'],
                         $urlInfo['body']);
                 }
-                $this->result = yield $promises;
+                $result = yield Promise\any($promises);
+                $result = $this->prepareResult($result);
             } catch (Amp\Artax\HttpException $error) {
-                echo $error;
+                //echo $error;
             }
         });
 
-        return $this->result;
+        return $result;
+    }
+
+    protected function prepareResult(array $result)
+    {
+        $data = [];
+
+        /** @var Exception[] $statuses */
+        $statuses = array_shift($result);
+        $responses = array_shift($result);
+        foreach ($responses as $url => $response) {
+            $data[$url] = [
+                'status' => true,
+                'data' => $response,
+            ];
+        }
+        foreach ($statuses as $url => $status) {
+            $data[$url] = [
+                'status' => false,
+                'data' => $status->getMessage(),
+            ];
+        }
+
+        return $data;
     }
 
     /**
