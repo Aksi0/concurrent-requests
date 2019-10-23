@@ -61,8 +61,8 @@ class AmpClass
     {
         $data = [];
 
-        /** @var Exception[] $statuses */
-        $statuses = array_shift($result);
+        /** @var Exception[] $errors */
+        $errors = array_shift($result);
         $responses = array_shift($result);
         foreach ($responses as $url => $response) {
             $data[$url] = [
@@ -70,10 +70,10 @@ class AmpClass
                 'data' => $response,
             ];
         }
-        foreach ($statuses as $url => $status) {
+        foreach ($errors as $url => $error) {
             $data[$url] = [
                 'status' => false,
-                'data' => $status->getMessage(),
+                'data' => $error->getMessage(),
             ];
         }
 
