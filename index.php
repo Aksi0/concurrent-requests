@@ -33,6 +33,21 @@ function ampExample()
 }
 
 
+function ampParallelExample()
+{
+    $amp = new AmpParallelClass();
+
+    $time = time();
+
+    print 'Before run' . PHP_EOL;
+    $result = $amp->run();
+    print 'After run. Time: ' . (time() - $time) . ' s' . PHP_EOL;
+
+    foreach ($result as $url => $item) {
+        print 'url: ' . $url . ' - size: ' . strlen($item['data']) . ' status: ' . ($item['status'] ? 'success' : 'fail') . PHP_EOL;
+    }
+}
+
 ##
 
 function guzzleExample()
@@ -83,19 +98,4 @@ function guzzleExample()
     $promise->wait();
 }
 
-function ampParallelExample()
-{
-    $amp = new AmpParallelClass();
-
-    $time = time();
-
-    print 'Before run' . PHP_EOL;
-    $result = $amp->run();
-    print 'After run. Time: ' . (time() - $time) . ' s' . PHP_EOL;
-
-    foreach ($result as $url => $item) {
-        print 'url: ' . $url . ' - size: ' . strlen($item['data']) . ' status: ' . ($item['status'] ? 'success' : 'fail') . PHP_EOL;
-    }
-}
-
-ampParallelExample();
+ampExample();
