@@ -6,11 +6,12 @@ use Amp\Artax\Response;
 use Amp\Coroutine;
 use Amp\Promise;
 use Amp\Loop;
+use function Amp\call;
 
 /**
  * Class AmpClass
  */
-class AmpClass
+class AmpHttpRequestsClass
 {
     /** @var array */
     protected $urls = [];
@@ -39,12 +40,12 @@ class AmpClass
     public function run()
     {
         $result = [];
-        Loop::run(function () use(&$result) {
+        Loop::run(function () use (&$result) {
             try {
                 /** @var Coroutine[] $promises */
                 $promises = [];
                 foreach ($this->urls as $urlInfo) {
-                    $promises[$urlInfo['url']] = Amp\call($this->getRequestHandler(), $urlInfo['url'],
+                    $promises[$urlInfo['url']] = call($this->getRequestHandler(), $urlInfo['url'],
                         $urlInfo['body']);
                 }
                 $result = yield Promise\any($promises);
@@ -60,9 +61,8 @@ class AmpClass
     protected function prepareResult(array $result)
     {
         $data = [];
-
-        /** @var Exception[] $errors */
-        $errors = array_shift($result);
+        /** @var Exception[] $exceptions */
+        $exceptions = array_shift($result);
         $responses = array_shift($result);
         foreach ($responses as $url => $response) {
             $data[$url] = [
@@ -70,7 +70,7 @@ class AmpClass
                 'data' => $response,
             ];
         }
-        foreach ($errors as $url => $error) {
+        foreach ($exceptions as $url => $error) {
             $data[$url] = [
                 'status' => false,
                 'data' => $error->getMessage(),

@@ -12,7 +12,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 function ampExample()
 {
-    $amp = new AmpClass();
+    $amp = new AmpHttpRequestsClass();
     // https://webhook.site/#!/36dbec3e-55ab-452e-a75e-9abea3369d02/a4495809-0027-440f-a7f0-1bbe8e8d31cb/1
 
     $amp->addUrl("https://webhook.site/36dbec3e-55ab-452e-a75e-9abea3369d02?type=get");
@@ -52,7 +52,7 @@ function guzzleExample()
                 break;
             }
 
-            $client = new Client(['timeout' => 5, 'handler' => $handler]);
+            $client = new Client(['timeout' => 15, 'handler' => $handler]);
             $url = array_shift($urls);
             $request = new Request('GET', $url, []);
 
@@ -83,4 +83,19 @@ function guzzleExample()
     $promise->wait();
 }
 
-guzzleExample();
+function ampParallelExample()
+{
+    $amp = new AmpParallelClass();
+
+    $time = time();
+
+    print 'Before run' . PHP_EOL;
+    $result = $amp->run();
+    print 'After run. Time: ' . (time() - $time) . ' s' . PHP_EOL;
+
+    foreach ($result as $url => $item) {
+        print 'url: ' . $url . ' - size: ' . strlen($item['data']) . ' status: ' . ($item['status'] ? 'success' : 'fail') . PHP_EOL;
+    }
+}
+
+ampParallelExample();
