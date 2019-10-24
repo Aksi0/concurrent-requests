@@ -1,6 +1,7 @@
 <?php
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
@@ -51,7 +52,7 @@ function guzzleExample()
                 break;
             }
 
-            $client = new Client(['timeout' => 20, 'handler' => $handler]);
+            $client = new Client(['timeout' => 5, 'handler' => $handler]);
             $url = array_shift($urls);
             $request = new Request('GET', $url, []);
 
@@ -73,6 +74,10 @@ function guzzleExample()
             /** @var GuzzleHttp\Psr7\Request $request */
             list($request, $response) = $result;
             echo (string)$request->getUri() . ' completed ' . PHP_EOL;
+        },
+        function ($result, $index) {
+            /** @var ConnectException $result */
+            echo (string)$result->getRequest()->getUri() . ' failed with message: ' . $result->getMessage() . PHP_EOL;
         }
     );
     $promise->wait();
